@@ -3,11 +3,29 @@ use num_traits::FromPrimitive;
 use rand::{seq::SliceRandom, thread_rng};
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test1() {
+        let a = CardSet::gen_set();
+        println!("{}", a.cards.contains(&Card::new(0, 4)));
+    }
+}
+
 #[derive(Clone)]
 pub struct CardSet {
-    cards: Vec<Card>,
+    pub cards: Vec<Card>,
 }
 impl CardSet {
+    pub fn new(cards: Vec<Card>) -> CardSet {
+        CardSet { cards }
+    }
+    pub fn iter<'a>(&'a mut self) -> core::slice::Iter<Card> {
+        self.cards.iter()
+    }
+
     pub fn to_string(&self) -> String {
         let mut str = String::new();
         for c in self.cards.iter() {
@@ -57,18 +75,35 @@ impl CardSet {
     pub fn pop(&mut self) -> Option<Card> {
         self.cards.pop()
     }
-    pub fn del_set(&mut self, set: CardSet) -> Result<(), &'static str> {
-        let mut set = set;
-        for c in set.iter() {}
-        Ok(())
+    pub fn find(&self, card: &Card) -> Option<usize> {
+        for (i, c) in self.cards.iter().enumerate() {
+            if c == card {
+                return Some(i);
+            }
+        }
+        None
     }
-
-    pub fn iter<'a>(&'a mut self) -> core::slice::Iter<Card> {
-        self.cards.iter()
+    pub fn remove(&mut self, card: &Card) -> Result<(), &'static str> {
+        match self.find(card) {
+            Some(i) => {
+                self.cards.remove(i);
+                Ok(())
+            }
+            None => Err("No such card"),
+        }
+    }
+    pub fn remove_set(&mut self, set: &CardSet) -> Result<(), &'static str> {
+        let mut set = set.clone();
+        let mut cards = self.clone();
+        for c in set.iter() {
+            cards.remove(c)?;
+        }
+        self.cards = cards.cards;
+        Ok(())
     }
 }
 
-#[derive(Eq, Clone)]
+#[derive(Eq, Clone, Debug)]
 pub struct Card {
     rank: Rank,
     suit: Suit,
@@ -117,11 +152,15 @@ impl PartialOrd for Card {
 }
 impl PartialEq for Card {
     fn eq(&self, other: &Self) -> bool {
-        self.rank == other.rank && self.suit == other.suit
+        if self.suit == Suit::Suit0 || other.suit == Suit::Suit0 {
+            self.rank == other.rank
+        } else {
+            self.rank == other.rank && self.suit == other.suit
+        }
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 enum Rank {
     Rank3,
     Rank4,
@@ -150,7 +189,7 @@ impl Rank {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 enum Suit {
     Heart,   //红桃♥
     Diamond, //方片♦
