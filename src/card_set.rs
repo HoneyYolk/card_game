@@ -2,6 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 use rand::{seq::SliceRandom, thread_rng};
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
+use std::fmt;
 
 #[cfg(test)]
 mod tests {
@@ -16,22 +17,14 @@ mod tests {
 
 #[derive(Clone)]
 pub struct CardSet {
-    pub cards: Vec<Card>,
+    cards: Vec<Card>,
 }
 impl CardSet {
     pub fn new(cards: Vec<Card>) -> CardSet {
         CardSet { cards }
     }
-    pub fn iter<'a>(&'a mut self) -> core::slice::Iter<Card> {
+    pub fn iter(&'_ mut self) -> core::slice::Iter<Card> {
         self.cards.iter()
-    }
-
-    pub fn to_string(&self) -> String {
-        let mut str = String::new();
-        for c in self.cards.iter() {
-            str.push_str(c.to_string());
-        }
-        str
     }
     pub fn gen_set() -> CardSet {
         let mut set = Vec::new();
@@ -103,6 +96,16 @@ impl CardSet {
     }
 }
 
+impl fmt::Display for CardSet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut str = String::new();
+        for c in self.cards.iter() {
+            str.push_str(c.to_string());
+        }
+        write!(f, "{}", str)
+    }
+}
+
 #[derive(Eq, Clone, Debug)]
 pub struct Card {
     rank: Rank,
@@ -117,26 +120,31 @@ impl Card {
     }
     pub fn to_string(&self) -> &str {
         match self.rank {
-            Rank::Rank0 => "牛大逼0号牌",
-            Rank::Rank3 => "3",
-            Rank::Rank4 => "4",
-            Rank::Rank5 => "5",
-            Rank::Rank6 => "6",
-            Rank::Rank7 => "7",
-            Rank::Rank8 => "8",
-            Rank::Rank9 => "9",
-            Rank::Rank10 => "10",
-            Rank::RankJ => "J",
-            Rank::RankQ => "Q",
-            Rank::RankK => "K",
-            Rank::RankA => "A",
-            Rank::Rank2 => "2",
-            Rank::RankJoker => "鬼",
-            Rank::RankKing => "王",
+            Rank::Card0 => "牛大逼0号牌",
+            Rank::Card3 => "3",
+            Rank::Card4 => "4",
+            Rank::Card5 => "5",
+            Rank::Card6 => "6",
+            Rank::Card7 => "7",
+            Rank::Card8 => "8",
+            Rank::Card9 => "9",
+            Rank::Card10 => "10",
+            Rank::CardJ => "J",
+            Rank::CardQ => "Q",
+            Rank::CardK => "K",
+            Rank::CardA => "A",
+            Rank::Card2 => "2",
+            Rank::CardJoker => "鬼",
+            Rank::CardKing => "王",
         }
     }
 }
 
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
 impl Ord for Card {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.rank.cmp(&other.rank) {
@@ -162,29 +170,29 @@ impl PartialEq for Card {
 
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
 enum Rank {
-    Rank3,
-    Rank4,
-    Rank5,
-    Rank6,
-    Rank7,
-    Rank8,
-    Rank9,
-    Rank10,
-    RankJ,
-    RankQ,
-    RankK,
-    RankA,
-    Rank2,
-    RankJoker,
-    RankKing,
-    Rank0,
+    Card3,
+    Card4,
+    Card5,
+    Card6,
+    Card7,
+    Card8,
+    Card9,
+    Card10,
+    CardJ,
+    CardQ,
+    CardK,
+    CardA,
+    Card2,
+    CardJoker,
+    CardKing,
+    Card0,
 }
 impl Rank {
     fn from_num(num: u32) -> Rank {
         if let Some(rank) = Rank::from_u32(num) {
             rank
         } else {
-            Rank::Rank0
+            Rank::Card0
         }
     }
 }
