@@ -20,8 +20,8 @@ pub struct CardSet {
     cards: Vec<Card>,
 }
 impl CardSet {
-    pub fn new(cards: Vec<Card>) -> CardSet {
-        CardSet { cards }
+    pub fn new() -> CardSet {
+        CardSet::default()
     }
     pub fn iter(&'_ mut self) -> core::slice::Iter<Card> {
         self.cards.iter()
@@ -96,6 +96,11 @@ impl CardSet {
     }
 }
 
+impl Default for CardSet {
+    fn default() -> Self {
+        Self { cards: Vec::new() }
+    }
+}
 impl fmt::Display for CardSet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut str = String::new();
