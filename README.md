@@ -1,6 +1,8 @@
 # 斗地主
 
 Rust 实现一个斗地主
+抄抄抄，我最会抄了
+https://github.com/LasmGratel/cardgame-rs
 
 ## 进度
 ### 基础库
