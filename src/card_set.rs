@@ -165,7 +165,9 @@ impl PartialOrd for Card {
 }
 impl PartialEq for Card {
     fn eq(&self, other: &Self) -> bool {
-        if self.suit == Suit::Suit0 || other.suit == Suit::Suit0 {
+        if self.rank == Rank::Card0 || other.rank == Rank::Card0 {
+            self.suit == other.suit
+        } else if self.suit == Suit::Suit0 || other.suit == Suit::Suit0 {
             self.rank == other.rank
         } else {
             self.rank == other.rank && self.suit == other.suit
@@ -190,6 +192,7 @@ enum Rank {
     Card2,
     CardJoker,
     CardKing,
+    //通配牌面
     Card0,
 }
 impl Rank {
@@ -208,7 +211,7 @@ enum Suit {
     Diamond, //方片♦
     Club,    //梅花♣
     Spade,   //黑桃♠
-    Suit0,   //双王花色
+    Suit0,   //通配花色
 }
 impl Suit {
     fn from_num(num: u32) -> Suit {
