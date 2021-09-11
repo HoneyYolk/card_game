@@ -10,6 +10,6 @@ mod test {
         for _ in 0..4 {
             set.push(Card::new(0, 4));
         }
-        assert!(handcard.remove_set(&set).is_err());
+        assert!(!handcard.remove_set(&set).is_err());
     }
 }
