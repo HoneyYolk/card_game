@@ -1,5 +1,10 @@
 pub mod card_set;
 pub mod desk;
+pub mod game;
+pub mod messager;
+pub mod player;
+pub mod rules;
+
 #[cfg(test)]
 mod test {
     use super::card_set::*;
