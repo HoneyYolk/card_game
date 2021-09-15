@@ -4,17 +4,6 @@ use rand::{seq::SliceRandom, thread_rng};
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::fmt;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test1() {
-        let a = CardSet::gen_set();
-        println!("{}", a.cards.contains(&Card::new(0, 4)));
-    }
-}
-
 #[derive(Clone)]
 pub struct CardSet {
     cards: Vec<Card>,
