@@ -3,19 +3,28 @@ use num_traits::FromPrimitive;
 use rand::{seq::SliceRandom, thread_rng};
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::fmt;
+use thiserror::Error;
 
-#[derive(Clone)]
+#[derive(Error, Debug)]
+pub enum CardSetErrors {
+    #[error("The input is not valid")]
+    InvalidInput,
+    #[error("Cant find card {0}")]
+    InvalidCard(Card),
+}
+
+#[derive(Clone, Eq, PartialEq)]
 pub struct CardSet {
     cards: Vec<Card>,
 }
 impl CardSet {
-    pub fn new() -> CardSet {
+    pub fn new() -> Self {
         CardSet::default()
     }
     pub fn iter(&'_ mut self) -> core::slice::Iter<Card> {
         self.cards.iter()
     }
-    pub fn gen_set() -> CardSet {
+    pub fn gen_deck() -> Self {
         let mut set = Vec::new();
         let mut rng = thread_rng();
         for i in 0..52 {
@@ -30,9 +39,14 @@ impl CardSet {
     pub fn sort(&mut self) {
         self.cards.sort();
     }
-    pub fn draw_cards(&mut self, amount: usize) -> Result<CardSet, &'static str> {
+    pub fn sorted(&self) -> Self {
+        let mut set = self.clone();
+        set.sort();
+        set
+    }
+    pub fn draw_cards(&mut self, amount: usize) -> Result<Self, CardSetErrors> {
         if amount > self.cards.len() {
-            return Err("Too many cards");
+            return Err(CardSetErrors::InvalidInput);
         }
         let mut cards = Vec::new();
         for _ in 0..amount {
@@ -46,13 +60,9 @@ impl CardSet {
     pub fn push(&mut self, card: Card) {
         self.cards.push(card);
     }
-    pub fn push_set(&mut self, set: CardSet) {
-        let mut set = set;
-        loop {
-            if let Some(card) = set.cards.pop() {
-                self.cards.push(card);
-            }
-        }
+    pub fn append(&mut self, set: Self) {
+        let mut set = set.cards;
+        self.cards.append(&mut set);
     }
     pub fn pop(&mut self) -> Option<Card> {
         self.cards.pop()
@@ -65,16 +75,16 @@ impl CardSet {
         }
         None
     }
-    pub fn remove(&mut self, card: &Card) -> Result<(), &'static str> {
+    pub fn remove(&mut self, card: &Card) -> Result<(), CardSetErrors> {
         match self.find(card) {
             Some(i) => {
                 self.cards.remove(i);
                 Ok(())
             }
-            None => Err("No such card"),
+            None => Err(CardSetErrors::InvalidCard(card.clone())),
         }
     }
-    pub fn remove_set(&mut self, set: &CardSet) -> Result<(), &'static str> {
+    pub fn remove_set(&mut self, set: &Self) -> Result<(), CardSetErrors> {
         let mut set = set.clone();
         let mut cards = self.clone();
         for c in set.iter() {
@@ -94,7 +104,7 @@ impl fmt::Display for CardSet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut str = String::new();
         for c in self.cards.iter() {
-            str.push_str(c.to_string());
+            str.push_str(&format!("[{}] ", c.to_string()));
         }
         write!(f, "{}", str)
     }
@@ -112,31 +122,32 @@ impl Card {
             suit: Suit::from_num(suit),
         }
     }
-    pub fn to_string(&self) -> &str {
-        match self.rank {
-            Rank::Card0 => "牛大逼0号牌",
-            Rank::Card3 => "3",
-            Rank::Card4 => "4",
-            Rank::Card5 => "5",
-            Rank::Card6 => "6",
-            Rank::Card7 => "7",
-            Rank::Card8 => "8",
-            Rank::Card9 => "9",
-            Rank::Card10 => "10",
-            Rank::CardJ => "J",
-            Rank::CardQ => "Q",
-            Rank::CardK => "K",
-            Rank::CardA => "A",
-            Rank::Card2 => "2",
-            Rank::CardJoker => "鬼",
-            Rank::CardKing => "王",
-        }
-    }
 }
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(
+            f,
+            "{}",
+            match self.rank {
+                Rank::Card0 => "牛大逼0号牌",
+                Rank::Card3 => "3",
+                Rank::Card4 => "4",
+                Rank::Card5 => "5",
+                Rank::Card6 => "6",
+                Rank::Card7 => "7",
+                Rank::Card8 => "8",
+                Rank::Card9 => "9",
+                Rank::Card10 => "10",
+                Rank::CardJ => "J",
+                Rank::CardQ => "Q",
+                Rank::CardK => "K",
+                Rank::CardA => "A",
+                Rank::Card2 => "2",
+                Rank::CardJoker => "鬼",
+                Rank::CardKing => "王",
+            }
+        )
     }
 }
 impl Ord for Card {
@@ -164,7 +175,7 @@ impl PartialEq for Card {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive, Debug)]
 enum Rank {
     Card3,
     Card4,
@@ -194,13 +205,13 @@ impl Rank {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, ToPrimitive, Debug)]
 enum Suit {
-    Heart,   //红桃♥
-    Diamond, //方片♦
-    Club,    //梅花♣
-    Spade,   //黑桃♠
-    Suit0,   //通配花色
+    Hearts,   //红桃♥
+    Diamonds, //方片♦
+    Clubs,    //梅花♣
+    Spades,   //黑桃♠
+    Suit0,    //通配花色
 }
 impl Suit {
     fn from_num(num: u32) -> Suit {
