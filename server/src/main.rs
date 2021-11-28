@@ -14,7 +14,7 @@ fn handle_client(stream: &mut TcpStream) {
 }
 
 fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:8888")?;
+    let listener = TcpListener::bind("127.0.0.1:10888")?;
     for stream in listener.incoming() {
         std::thread::spawn(|| handle_client(&mut stream.unwrap()));
     }
